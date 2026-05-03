@@ -612,6 +612,7 @@ function handleWaitlist(){
   }
   msg.innerHTML='<p style="color:#2dd4a0;font-size:0.82rem;font-weight:500">You\'re on the list. We\'ll reach out personally.</p>';
   document.getElementById('wEmail').value='';
+  window.open('https://tally.so/r/LZ5MKz?email='+encodeURIComponent(email),'_blank');
 }
 document.getElementById('wEmail').addEventListener('keydown',e=>{if(e.key==='Enter')handleWaitlist()});
 
