@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Arivu — Your AI Chief of Staff</title>
+<meta name="description" content="Arivu is your personal AI Chief of Staff. It reads your emails, attends your meetings, remembers everything, and acts on your behalf.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Syne:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#060a0f;
+  --bg2:#0c1118;
+  --bg3:#111820;
+  --ink:#f0ede8;
+  --ink2:rgba(240,237,232,0.55);
+  --ink3:rgba(240,237,232,0.25);
+  --gold:#c9a96e;
+  --gold2:#e8c98a;
+  --teal:#2dd4a0;
+  --border:rgba(240,237,232,0.08);
+  --serif:'Playfair Display',serif;
+  --sans:'Syne',sans-serif;
+}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg);color:var(--ink);
+  font-family:var(--sans);font-weight:300;
+  overflow-x:hidden;cursor:none;
+}
+
+/* CUSTOM CURSOR */
+.cursor{
+  position:fixed;width:8px;height:8px;
+  background:var(--gold);border-radius:50%;
+  pointer-events:none;z-index:9999;
+  transform:translate(-50%,-50%);
+  transition:width 0.2s,height 0.2s,opacity 0.2s;
+  mix-blend-mode:difference;
+}
+.cursor-ring{
+  position:fixed;width:32px;height:32px;
+  border:1px solid rgba(201,169,110,0.4);
+  border-radius:50%;pointer-events:none;z-index:9998;
+  transform:translate(-50%,-50%);
+  transition:transform 0.12s ease-out,width 0.3s,height 0.3s;
+}
+
+/* GRAIN OVERLAY */
+body::before{
+  content:'';position:fixed;inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  opacity:0.35;pointer-events:none;z-index:1;
+}
+
+/* NAV */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:1.4rem 3rem;
+  border-bottom:0.5px solid var(--border);
+  background:rgba(6,10,15,0.8);
+  backdrop-filter:blur(20px);
+}
+.logo{
+  font-family:var(--serif);font-size:1.6rem;
+  letter-spacing:-0.02em;color:var(--ink);
+  display:flex;align-items:baseline;gap:2px;
+}
+.logo-dot{color:var(--gold);font-size:2rem;line-height:0;position:relative;top:4px}
+.nav-right{display:flex;align-items:center;gap:2rem}
+.nav-link{
+  font-size:0.72rem;font-weight:500;letter-spacing:0.12em;
+  text-transform:uppercase;color:var(--ink2);
+  text-decoration:none;transition:color 0.2s;
+}
+.nav-link:hover{color:var(--ink)}
+.nav-btn{
+  font-size:0.72rem;font-weight:500;letter-spacing:0.1em;
+  text-transform:uppercase;padding:0.6rem 1.4rem;
+  border:0.5px solid var(--gold);color:var(--gold);
+  background:transparent;border-radius:100px;
+  cursor:none;transition:all 0.25s;font-family:var(--sans);
+}
+.nav-btn:hover{background:var(--gold);color:var(--bg)}
+
+/* HERO */
+.hero{
+  min-height:100vh;display:flex;flex-direction:column;
+  justify-content:center;align-items:center;
+  text-align:center;padding:10rem 2rem 6rem;
+  position:relative;overflow:hidden;
+}
+.hero-glow{
+  position:absolute;inset:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 0%, rgba(201,169,110,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 40% at 20% 80%, rgba(45,212,160,0.05) 0%, transparent 50%),
+    radial-gradient(ellipse 40% 30% at 80% 60%, rgba(201,169,110,0.04) 0%, transparent 50%);
+}
+.hero-grid{
+  position:absolute;inset:0;pointer-events:none;
+  background-image:
+    linear-gradient(rgba(240,237,232,0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(240,237,232,0.02) 1px, transparent 1px);
+  background-size:60px 60px;
+  mask-image:radial-gradient(ellipse 80% 80% at 50% 50%, black 0%, transparent 70%);
+}
+.hero-eyebrow{
+  display:inline-flex;align-items:center;gap:0.6rem;
+  font-size:0.68rem;font-weight:500;letter-spacing:0.2em;
+  text-transform:uppercase;color:var(--teal);
+  border:0.5px solid rgba(45,212,160,0.25);
+  padding:0.4rem 1.2rem;border-radius:100px;
+  margin-bottom:2.5rem;
+  opacity:0;animation:fadeUp 1s 0.3s cubic-bezier(0.16,1,0.3,1) forwards;
+}
+.hero-eyebrow-dot{width:5px;height:5px;border-radius:50%;background:var(--teal);animation:pulse 2s infinite}
+.hero h1{
+  font-family:var(--serif);
+  font-size:clamp(3.5rem,9vw,8rem);
+  line-height:1.02;letter-spacing:-0.03em;
+  max-width:1000px;margin-bottom:2rem;
+  opacity:0;animation:fadeUp 1s 0.5s cubic-bezier(0.16,1,0.3,1) forwards;
+}
+.hero h1 .line2{display:block;font-style:italic;color:var(--gold)}
+.hero-sub{
+  font-size:clamp(0.95rem,1.8vw,1.15rem);
+  color:var(--ink2);max-width:540px;
+  line-height:1.75;margin-bottom:3.5rem;
+  opacity:0;animation:fadeUp 1s 0.7s cubic-bezier(0.16,1,0.3,1) forwards;
+}
+.hero-actions{
+  display:flex;gap:1rem;align-items:center;flex-wrap:wrap;justify-content:center;
+  opacity:0;animation:fadeUp 1s 0.9s cubic-bezier(0.16,1,0.3,1) forwards;
+}
+.btn-gold{
+  background:var(--gold);color:var(--bg);
+  padding:0.9rem 2.4rem;border-radius:100px;
+  font-family:var(--sans);font-size:0.82rem;font-weight:600;
+  letter-spacing:0.06em;text-transform:uppercase;
+  border:none;cursor:none;transition:all 0.3s;
+}
+.btn-gold:hover{background:var(--gold2);transform:translateY(-2px)}
+.btn-outline{
+  padding:0.9rem 2rem;border-radius:100px;
+  font-family:var(--sans);font-size:0.82rem;font-weight:500;
+  letter-spacing:0.06em;text-transform:uppercase;
+  border:0.5px solid var(--border);color:var(--ink2);
+  background:transparent;cursor:none;transition:all 0.3s;
+}
+.btn-outline:hover{border-color:var(--ink2);color:var(--ink)}
+.hero-scroll{
+  position:absolute;bottom:2.5rem;left:50%;transform:translateX(-50%);
+  display:flex;flex-direction:column;align-items:center;gap:0.75rem;
+  opacity:0;animation:fadeUp 1s 1.3s forwards;
+}
+.scroll-label{font-size:0.62rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink3)}
+.scroll-bar{width:0.5px;height:52px;background:linear-gradient(to bottom,var(--gold),transparent)}
+
+/* MARQUEE */
+.marquee-section{
+  border-top:0.5px solid var(--border);
+  border-bottom:0.5px solid var(--border);
+  padding:1.2rem 0;overflow:hidden;
+  background:var(--bg2);
+}
+.marquee-inner{display:flex;gap:0;width:max-content;animation:marquee 25s linear infinite}
+.marquee-item{
+  display:flex;align-items:center;gap:1.8rem;
+  padding:0 2.5rem;
+  font-size:0.68rem;font-weight:500;
+  letter-spacing:0.18em;text-transform:uppercase;
+  color:var(--ink3);white-space:nowrap;
+}
+.marquee-item strong{color:var(--gold);font-weight:500}
+.m-sep{width:1px;height:16px;background:var(--border)}
+
+/* SECTIONS */
+.section{padding:8rem 3rem;max-width:1280px;margin:0 auto}
+.sec-label{
+  font-size:0.65rem;font-weight:500;letter-spacing:0.22em;
+  text-transform:uppercase;color:var(--gold);
+  display:flex;align-items:center;gap:0.75rem;margin-bottom:1.5rem;
+}
+.sec-label::before{content:'';width:24px;height:0.5px;background:var(--gold)}
+.sec-h2{
+  font-family:var(--serif);
+  font-size:clamp(2.2rem,4.5vw,3.8rem);
+  line-height:1.1;letter-spacing:-0.025em;
+  margin-bottom:1.5rem;max-width:680px;
+}
+.sec-h2 em{font-style:italic;color:var(--ink2)}
+
+/* TERMINAL */
+.terminal-wrap{
+  margin:5rem 0;border:0.5px solid var(--border);
+  border-radius:20px;overflow:hidden;
+  background:var(--bg2);
+  box-shadow:0 0 0 0.5px var(--border),0 40px 120px rgba(0,0,0,0.6);
+}
+.t-bar{
+  background:var(--bg3);
+  padding:1rem 1.5rem;
+  display:flex;align-items:center;gap:0.6rem;
+  border-bottom:0.5px solid var(--border);
+}
+.td{width:11px;height:11px;border-radius:50%}
+.td1{background:#ff5f56}.td2{background:#ffbd2e}.td3{background:#27c93f}
+.t-name{
+  margin-left:0.5rem;font-size:0.72rem;
+  color:var(--ink3);letter-spacing:0.05em;
+}
+.t-body{padding:2.5rem;line-height:2;font-size:0.83rem}
+.ta{color:var(--gold);font-weight:500}
+.ty{color:var(--ink2)}
+.tt{color:var(--ink)}
+.tact{color:var(--teal);font-style:italic}
+.tdim{color:var(--ink3);font-size:0.72rem}
+.tl{display:block}
+.cur{
+  display:inline-block;width:7px;height:13px;
+  background:var(--gold);vertical-align:middle;
+  animation:blink 1.1s infinite;
+}
+
+/* FEATURES GRID */
+.feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border:0.5px solid var(--border);border-radius:20px;overflow:hidden;margin-top:5rem}
+.feat{
+  background:var(--bg);padding:2.8rem 2.4rem;
+  transition:background 0.3s;position:relative;overflow:hidden;
+}
+.feat::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse 80% 80% at 50% 0%,rgba(201,169,110,0.06),transparent);
+  opacity:0;transition:opacity 0.3s;
+}
+.feat:hover{background:var(--bg2)}
+.feat:hover::before{opacity:1}
+.feat-num{
+  font-family:var(--serif);font-size:3.5rem;
+  color:rgba(201,169,110,0.1);line-height:1;
+  margin-bottom:1.5rem;letter-spacing:-0.03em;
+}
+.feat h3{
+  font-family:var(--serif);font-size:1.25rem;
+  margin-bottom:0.8rem;letter-spacing:-0.01em;
+}
+.feat p{font-size:0.85rem;color:var(--ink2);line-height:1.75}
+.feat-tag{
+  display:inline-block;margin-top:1.2rem;
+  font-size:0.62rem;font-weight:500;letter-spacing:0.1em;
+  text-transform:uppercase;color:var(--gold);
+  border:0.5px solid rgba(201,169,110,0.2);
+  padding:0.3rem 0.8rem;border-radius:100px;
+}
+
+/* HOW IT WORKS — dark strip */
+.how-section{
+  background:var(--bg2);
+  border-top:0.5px solid var(--border);
+  border-bottom:0.5px solid var(--border);
+  padding:8rem 3rem;
+}
+.how-inner{max-width:1280px;margin:0 auto}
+.agents{display:grid;grid-template-columns:repeat(4,1fr);gap:1.5rem;margin-top:5rem}
+.agent{
+  padding:2.2rem 1.8rem;
+  border:0.5px solid var(--border);border-radius:16px;
+  background:var(--bg);
+  transition:border-color 0.3s,transform 0.3s;
+  position:relative;overflow:hidden;
+}
+.agent:hover{border-color:rgba(201,169,110,0.3);transform:translateY(-4px)}
+.agent-num{
+  font-size:0.62rem;font-weight:500;letter-spacing:0.15em;
+  text-transform:uppercase;color:var(--gold);
+  margin-bottom:1.8rem;display:flex;align-items:center;gap:0.5rem;
+}
+.agent-num::after{content:'';flex:1;height:0.5px;background:rgba(201,169,110,0.15)}
+.agent h4{
+  font-family:var(--serif);font-size:1.15rem;
+  margin-bottom:0.8rem;
+}
+.agent p{font-size:0.82rem;color:var(--ink2);line-height:1.7}
+.agent-capability{
+  margin-top:1.5rem;display:flex;flex-direction:column;gap:0.5rem;
+}
+.cap{
+  font-size:0.75rem;color:var(--ink3);
+  display:flex;align-items:center;gap:0.5rem;
+}
+.cap::before{content:'→';color:var(--gold);font-size:0.65rem}
+
+/* CONNECTORS */
+.connectors{display:flex;flex-wrap:wrap;gap:0.75rem;margin-top:3rem}
+.conn{
+  padding:0.5rem 1.2rem;border-radius:100px;
+  border:0.5px solid var(--border);
+  font-size:0.75rem;color:var(--ink2);
+  transition:all 0.2s;
+}
+.conn:hover{border-color:var(--gold);color:var(--gold)}
+
+/* WAITLIST */
+.waitlist-section{
+  padding:10rem 3rem;text-align:center;
+  position:relative;overflow:hidden;
+}
+.waitlist-glow{
+  position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse 60% 60% at 50% 50%,rgba(201,169,110,0.06),transparent);
+}
+.waitlist-section h2{
+  font-family:var(--serif);
+  font-size:clamp(2.5rem,6vw,5.5rem);
+  line-height:1.05;letter-spacing:-0.03em;
+  margin-bottom:1.5rem;
+}
+.waitlist-section h2 em{font-style:italic;color:var(--gold)}
+.waitlist-section p{
+  font-size:1rem;color:var(--ink2);
+  max-width:480px;margin:0 auto 3rem;line-height:1.75;
+}
+.wform{
+  display:flex;gap:0.75rem;max-width:460px;
+  margin:0 auto;flex-wrap:wrap;justify-content:center;
+}
+.winput{
+  flex:1;min-width:220px;
+  padding:0.9rem 1.6rem;border-radius:100px;
+  background:var(--bg2);
+  border:0.5px solid var(--border);
+  font-family:var(--sans);font-size:0.88rem;
+  color:var(--ink);outline:none;
+  transition:border-color 0.2s;
+}
+.winput:focus{border-color:rgba(201,169,110,0.4)}
+.winput::placeholder{color:var(--ink3)}
+.wsilent{
+  margin-top:1.5rem;font-size:0.72rem;
+  color:var(--ink3);letter-spacing:0.05em;
+  display:flex;align-items:center;justify-content:center;gap:0.5rem;
+}
+
+/* FOOTER */
+footer{
+  border-top:0.5px solid var(--border);
+  padding:2.5rem 3rem;
+  display:flex;justify-content:space-between;
+  align-items:center;
+}
+.footer-logo{font-family:var(--serif);font-size:1.2rem;color:var(--ink)}
+.footer-logo span{color:var(--gold)}
+.footer-right{display:flex;flex-direction:column;align-items:flex-end;gap:0.3rem}
+.footer-copy{font-size:0.72rem;color:var(--ink3)}
+.footer-tag{
+  font-size:0.62rem;font-weight:500;letter-spacing:0.15em;
+  text-transform:uppercase;color:var(--gold);
+}
+
+/* ANIMATIONS */
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+@keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.5;transform:scale(0.8)}}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  nav{padding:1rem 1.5rem}
+  .section,.how-section{padding:5rem 1.5rem}
+  .feat-grid{grid-template-columns:1fr}
+  .agents{grid-template-columns:1fr 1fr}
+  footer{flex-direction:column;gap:1.5rem;text-align:center}
+  .footer-right{align-items:center}
+}
+@media(max-width:540px){
+  .agents{grid-template-columns:1fr}
+  .nav-right .nav-link{display:none}
+}
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cur"></div>
+<div class="cursor-ring" id="curRing"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">arivu<span class="logo-dot">·</span></div>
+  <div class="nav-right">
+    <a href="#what" class="nav-link">What it does</a>
+    <a href="#how" class="nav-link">How it works</a>
+    <button class="nav-btn" onclick="document.getElementById('waitlist').scrollIntoView({behavior:'smooth'})">Join waitlist</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-glow"></div>
+  <div class="hero-grid"></div>
+  <div class="hero-eyebrow">
+    <span class="hero-eyebrow-dot"></span>
+    Building in stealth · Bengaluru, India
+  </div>
+  <h1>
+    The work you dread,
+    <span class="line2">handled.</span>
+  </h1>
+  <p class="hero-sub">Arivu is your personal AI Chief of Staff. It reads your emails, remembers your meetings, drafts your replies, and acts — so you don't have to.</p>
+  <div class="hero-actions">
+    <button class="btn-gold" onclick="document.getElementById('waitlist').scrollIntoView({behavior:'smooth'})">Request early access</button>
+    <button class="btn-outline" onclick="document.getElementById('what').scrollIntoView({behavior:'smooth'})">See how it works</button>
+  </div>
+  <div class="hero-scroll">
+    <span class="scroll-label">Scroll</span>
+    <div class="scroll-bar"></div>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-section">
+  <div class="marquee-inner">
+    <div class="marquee-item"><strong>Email drafts</strong> in your voice<span class="m-sep"></span></div>
+    <div class="marquee-item"><strong>Morning briefings</strong> every day<span class="m-sep"></span></div>
+    <div class="marquee-item"><strong>Meeting summaries</strong> instantly<span class="m-sep"></span></div>
+    <div class="marquee-item"><strong>Proactive reminders</strong> always<span class="m-sep"></span></div>
+    <div class="marquee-item"><strong>Search</strong> your own data<span class="m-sep"></span></div>
+    <div class="marquee-item"><strong>Voice-first</strong> interface<span class="m-sep"></span></div>
+    <div class="marquee-item"><strong>Private</strong> by design<span class="m-sep"></span></div>
+    <div class="marquee-item"><strong>Google</strong> & Microsoft ready<span class="m-sep"></span></div>
+    <div class="marquee-item"><strong>Email drafts</strong> in your voice<span class="m-sep"></span></div>
+    <div class="marquee-item"><strong>Morning briefings</strong> every day<span class="m-sep"></span></div>
+    <div class="marquee-item"><strong>Meeting summaries</strong> instantly<span class="m-sep"></span></div>
+    <div class="marquee-item"><strong>Proactive reminders</strong> always<span class="m-sep"></span></div>
+    <div class="marquee-item"><strong>Search</strong> your own data<span class="m-sep"></span></div>
+    <div class="marquee-item"><strong>Voice-first</strong> interface<span class="m-sep"></span></div>
+    <div class="marquee-item"><strong>Private</strong> by design<span class="m-sep"></span></div>
+    <div class="marquee-item"><strong>Google</strong> & Microsoft ready<span class="m-sep"></span></div>
+  </div>
+</div>
+
+<!-- WHAT -->
+<div id="what">
+<div class="section">
+  <div class="sec-label">What Arivu does</div>
+  <h2 class="sec-h2">Not a chatbot.<br><em>A chief of staff.</em></h2>
+
+  <div class="terminal-wrap">
+    <div class="t-bar">
+      <div class="td td1"></div><div class="td td2"></div><div class="td td3"></div>
+      <span class="t-name">arivu · good morning</span>
+    </div>
+    <div class="t-body">
+      <span class="tl"><span class="ta">Arivu</span> <span class="tdim">7:31am</span></span>
+      <span class="tl"><span class="tt">Good morning. Here's your day —</span></span>
+      <span class="tl"><span class="tt">→ 3 emails need replies &nbsp;· &nbsp;2 marked urgent</span></span>
+      <span class="tl"><span class="tt">→ Standup at 10am &nbsp;· &nbsp;Product sync at 3pm</span></span>
+      <span class="tl"><span class="tt">→ You promised a report to your team by EOD</span></span>
+      <span class="tl">&nbsp;</span>
+      <span class="tl"><span class="tt">I've drafted replies to the urgent emails in your tone.</span></span>
+      <span class="tl"><span class="tact">→ Review drafts &nbsp;· &nbsp;Send all &nbsp;· &nbsp;Skip</span></span>
+      <span class="tl">&nbsp;</span>
+      <span class="tl"><span class="ty">You</span> <span class="tdim">7:33am</span></span>
+      <span class="tl"><span class="tt">What did we decide in Tuesday's product sync?</span></span>
+      <span class="tl">&nbsp;</span>
+      <span class="tl"><span class="ta">Arivu</span> <span class="tdim">7:33am</span></span>
+      <span class="tl"><span class="tt">From your meeting transcript — three decisions:</span></span>
+      <span class="tl"><span class="tt">1. &nbsp;Launch moved to Q3, pending design sign-off</span></span>
+      <span class="tl"><span class="tt">2. &nbsp;API integration milestone assigned to your team</span></span>
+      <span class="tl"><span class="tt">3. &nbsp;Next sync rescheduled to Thursday 2pm</span></span>
+      <span class="tl">&nbsp;</span>
+      <span class="tl"><span class="tact">→ Update the project doc?</span> <span class="cur"></span></span>
+    </div>
+  </div>
+
+  <div class="feat-grid">
+    <div class="feat">
+      <div class="feat-num">01</div>
+      <h3>Knows your world</h3>
+      <p>Connects to Gmail, Outlook, Google Calendar, Teams, Notion, and your meeting transcripts. One unified memory across everything.</p>
+      <span class="feat-tag">Deep integrations</span>
+    </div>
+    <div class="feat">
+      <div class="feat-num">02</div>
+      <h3>Acts on your behalf</h3>
+      <p>Drafts emails in your voice, creates tasks, summarises calls, sends reminders. Always asks before it acts.</p>
+      <span class="feat-tag">Human in the loop</span>
+    </div>
+    <div class="feat">
+      <div class="feat-num">03</div>
+      <h3>Private by design</h3>
+      <p>Your data never trains our models. Run entirely on your own infrastructure if needed. Built for enterprise trust from day one.</p>
+      <span class="feat-tag">On-premise option</span>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- HOW -->
+<div class="how-section" id="how">
+  <div class="how-inner">
+    <div class="sec-label">How it works</div>
+    <h2 class="sec-h2">Four agents.<br>One crew.<br><em>Zero missed details.</em></h2>
+    <div class="agents">
+      <div class="agent">
+        <div class="agent-num">Agent 01</div>
+        <h4>PA agent</h4>
+        <p>Your daily operations. Morning briefings, reminders, follow-up nudges — proactively, without being asked.</p>
+        <div class="agent-capability">
+          <span class="cap">Morning briefings</span>
+          <span class="cap">Deadline reminders</span>
+          <span class="cap">Proactive nudges</span>
+        </div>
+      </div>
+      <div class="agent">
+        <div class="agent-num">Agent 02</div>
+        <h4>Research agent</h4>
+        <p>Ask anything about your emails, documents, and transcripts. It searches your data and always cites the source.</p>
+        <div class="agent-capability">
+          <span class="cap">Search your docs</span>
+          <span class="cap">Transcript recall</span>
+          <span class="cap">Source citations</span>
+        </div>
+      </div>
+      <div class="agent">
+        <div class="agent-num">Agent 03</div>
+        <h4>Comms agent</h4>
+        <p>Drafts replies in your exact voice. Surfaces urgent messages. Sends only after your explicit approval.</p>
+        <div class="agent-capability">
+          <span class="cap">Draft in your tone</span>
+          <span class="cap">Inbox triage</span>
+          <span class="cap">Approval before send</span>
+        </div>
+      </div>
+      <div class="agent">
+        <div class="agent-num">Agent 04</div>
+        <h4>Voice agent</h4>
+        <p>Call Arivu on your commute. It listens, takes action, and reports back. A hands-free chief of staff.</p>
+        <div class="agent-capability">
+          <span class="cap">Hands-free mode</span>
+          <span class="cap">Voice commands</span>
+          <span class="cap">Instant execution</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:4rem">
+      <div class="sec-label">Connects with</div>
+      <div class="connectors">
+        <span class="conn">Gmail</span>
+        <span class="conn">Google Calendar</span>
+        <span class="conn">Google Drive</span>
+        <span class="conn">Outlook</span>
+        <span class="conn">Microsoft Teams</span>
+        <span class="conn">SharePoint</span>
+        <span class="conn">Notion</span>
+        <span class="conn">Slack</span>
+        <span class="conn">Meeting transcripts</span>
+        <span class="conn">+ more coming</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- WAITLIST -->
+<div class="waitlist-section" id="waitlist">
+  <div class="waitlist-glow"></div>
+  <div class="sec-label" style="justify-content:center">Early access</div>
+  <h2>Be the first to<br><em>meet Arivu.</em></h2>
+  <p>We're building in stealth. Join the waitlist and we'll reach out personally when we're ready for you.</p>
+  <div class="wform">
+    <input class="winput" type="email" placeholder="your@email.com" id="wEmail"/>
+    <button class="btn-gold" onclick="handleWaitlist()">Get early access</button>
+  </div>
+  <div id="wMsg" style="min-height:2rem;margin-top:1rem"></div>
+  <div class="wsilent">
+    <svg width="10" height="12" viewBox="0 0 10 12" fill="none"><rect x="1" y="5" width="8" height="7" rx="1.5" stroke="currentColor" stroke-width="1"/><path d="M3 5V3.5a2 2 0 014 0V5" stroke="currentColor" stroke-width="1" stroke-linecap="round"/></svg>
+    No spam. No noise. Silent until we launch.
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">arivu<span>·</span></div>
+  <div class="footer-right">
+    <span class="footer-tag">Made in Bengaluru · Building in stealth</span>
+    <span class="footer-copy">© 2026 Arivu AI · All rights reserved · getarivu.com</span>
+  </div>
+</footer>
+
+<script>
+// Custom cursor
+const cur=document.getElementById('cur');
+const ring=document.getElementById('curRing');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur.style.left=mx+'px';cur.style.top=my+'px'});
+function animRing(){rx+=(mx-rx)*0.12;ry+=(my-ry)*0.12;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(animRing)}
+animRing();
+document.querySelectorAll('button,a,.feat,.agent,.conn').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{cur.style.width='14px';cur.style.height='14px';ring.style.width='48px';ring.style.height='48px'});
+  el.addEventListener('mouseleave',()=>{cur.style.width='8px';cur.style.height='8px';ring.style.width='32px';ring.style.height='32px'});
+});
+
+// Waitlist
+function handleWaitlist(){
+  const email=document.getElementById('wEmail').value.trim();
+  const msg=document.getElementById('wMsg');
+  if(!email||!email.includes('@')||!email.includes('.')){
+    msg.innerHTML='<p style="color:#ff6b6b;font-size:0.8rem">Please enter a valid email address.</p>';return;
+  }
+  msg.innerHTML='<p style="color:#2dd4a0;font-size:0.82rem;font-weight:500">You\'re on the list. We\'ll reach out personally.</p>';
+  document.getElementById('wEmail').value='';
+}
+document.getElementById('wEmail').addEventListener('keydown',e=>{if(e.key==='Enter')handleWaitlist()});
+
+// Scroll reveal
+const obs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting){e.target.style.opacity='1';e.target.style.transform='translateY(0)';obs.unobserve(e.target)}});
+},{threshold:0.1});
+document.querySelectorAll('.feat,.agent,.conn').forEach(el=>{
+  el.style.opacity='0';el.style.transform='translateY(20px)';
+  el.style.transition='opacity 0.7s ease, transform 0.7s ease';
+  obs.observe(el);
+});
+</script>
+</body>
+</html>
