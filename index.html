@@ -29,7 +29,11 @@ body{
   font-family:var(--sans);font-weight:300;
   overflow-x:hidden;cursor:none;
 }
-
+  
+/* TERMINAL ANIMATION */
+.tl{opacity:0;transform:translateY(4px);transition:opacity 0.3s ease,transform 0.3s ease;display:block}
+.tl.show{opacity:1;transform:translateY(0)}
+  
 /* CUSTOM CURSOR */
 .cursor{
   position:fixed;width:8px;height:8px;
@@ -452,26 +456,26 @@ footer{
       <div class="td td1"></div><div class="td td2"></div><div class="td td3"></div>
       <span class="t-name">arivu · good morning</span>
     </div>
-    <div class="t-body">
-      <span class="tl"><span class="ta">Arivu</span> <span class="tdim">7:31am</span></span>
-      <span class="tl"><span class="tt">Good morning. Here's your day —</span></span>
-      <span class="tl"><span class="tt">→ 3 emails need replies &nbsp;· &nbsp;2 marked urgent</span></span>
-      <span class="tl"><span class="tt">→ Standup at 10am &nbsp;· &nbsp;Product sync at 3pm</span></span>
-      <span class="tl"><span class="tt">→ You promised a report to your team by EOD</span></span>
-      <span class="tl">&nbsp;</span>
-      <span class="tl"><span class="tt">I've drafted replies to the urgent emails in your tone.</span></span>
-      <span class="tl"><span class="tact">→ Review drafts &nbsp;· &nbsp;Send all &nbsp;· &nbsp;Skip</span></span>
-      <span class="tl">&nbsp;</span>
-      <span class="tl"><span class="ty">You</span> <span class="tdim">7:33am</span></span>
-      <span class="tl"><span class="tt">What did we decide in Tuesday's product sync?</span></span>
-      <span class="tl">&nbsp;</span>
-      <span class="tl"><span class="ta">Arivu</span> <span class="tdim">7:33am</span></span>
-      <span class="tl"><span class="tt">From your meeting transcript — three decisions:</span></span>
-      <span class="tl"><span class="tt">1. &nbsp;Launch moved to Q3, pending design sign-off</span></span>
-      <span class="tl"><span class="tt">2. &nbsp;API integration milestone assigned to your team</span></span>
-      <span class="tl"><span class="tt">3. &nbsp;Next sync rescheduled to Thursday 2pm</span></span>
-      <span class="tl">&nbsp;</span>
-      <span class="tl"><span class="tact">→ Update the project doc?</span> <span class="cur"></span></span>
+    <div class="t-body" id="tbody">
+      <span class="tl" id="l0"><span class="ta">Arivu</span><span class="tdim">7:31am</span></span>
+      <span class="tl" id="l1"><span class="tt">Good morning. Here's your day —</span></span>
+      <span class="tl" id="l2"><span class="tt">→ 3 emails need replies &nbsp;·&nbsp; 2 marked urgent</span></span>
+      <span class="tl" id="l3"><span class="tt">→ Standup at 10am &nbsp;·&nbsp; Product sync at 3pm</span></span>
+      <span class="tl" id="l4"><span class="tt">→ You promised a report to your team by EOD</span></span>
+      <span class="tl" id="l5">&nbsp;</span>
+      <span class="tl" id="l6"><span class="tt">I've drafted replies to the urgent emails in your tone.</span></span>
+      <span class="tl" id="l7"><span class="tact">→ Review drafts &nbsp;·&nbsp; Send all &nbsp;·&nbsp; Skip</span></span>
+      <span class="tl" id="l8">&nbsp;</span>
+      <span class="tl" id="l9"><span class="ty">You</span><span class="tdim">7:33am</span></span>
+      <span class="tl" id="l10"><span class="tt">What did we decide in Tuesday's product sync?</span></span>
+      <span class="tl" id="l11">&nbsp;</span>
+      <span class="tl" id="l12"><span class="ta">Arivu</span><span class="tdim">7:33am</span></span>
+      <span class="tl" id="l13"><span class="tt">From your meeting transcript — three decisions:</span></span>
+      <span class="tl" id="l14"><span class="tt">1. &nbsp;Launch moved to Q3, pending design sign-off</span></span>
+      <span class="tl" id="l15"><span class="tt">2. &nbsp;API integration milestone assigned to your team</span></span>
+      <span class="tl" id="l16"><span class="tt">3. &nbsp;Next sync rescheduled to Thursday 2pm</span></span>
+      <span class="tl" id="l17">&nbsp;</span>
+      <span class="tl" id="l18"><span class="tact">→ Update the project doc?</span><span class="cur"></span></span>
     </div>
   </div>
 
@@ -625,6 +629,17 @@ document.querySelectorAll('.feat,.agent,.conn').forEach(el=>{
   el.style.transition='opacity 0.7s ease, transform 0.7s ease';
   obs.observe(el);
 });
+  // Terminal animation
+const _delays=[0,400,700,1000,1300,1700,2000,2500,3200,3900,4200,4700,5000,5400,5800,6100,6400,6800,7100];
+function _runTerm(){
+  _delays.forEach((d,i)=>{
+    setTimeout(()=>{
+      const el=document.getElementById('l'+i);
+      if(el)el.classList.add('show');
+    },d);
+  });
+}
+_runTerm();
 </script>
 </body>
 </html>
