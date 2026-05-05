@@ -383,8 +383,19 @@ footer{
   .agents{grid-template-columns:1fr}
   .nav-right .nav-link{display:none}
 }
+.hear-btn{
+  margin-left:auto;font-size:0.65rem;font-weight:500;
+  letter-spacing:0.1em;text-transform:uppercase;
+  padding:0.35rem 1rem;border-radius:100px;
+  border:0.5px solid rgba(201,169,110,0.4);
+  color:#c9a96e;background:transparent;
+  cursor:pointer;transition:all 0.25s;font-family:var(--sans);
+}
+.hear-btn:hover{background:rgba(201,169,110,0.15)}
+.hear-btn.playing{border-color:#2dd4a0;color:#2dd4a0}
 </style>
 </head>
+  
 <body>
 
 <div class="cursor" id="cur"></div>
@@ -455,6 +466,7 @@ footer{
     <div class="t-bar">
       <div class="td td1"></div><div class="td td2"></div><div class="td td3"></div>
       <span class="t-name">arivu · good morning</span>
+      <button class="hear-btn" id="hearBtn" onclick="speakArivu()">▶ Hear Arivu</button>
     </div>
     <div class="t-body" id="tbody">
       <span class="tl" id="l0"><span class="ta">Arivu</span><span class="tdim">7:31am</span></span>
@@ -640,6 +652,30 @@ function _runTerm(){
   });
 }
 _runTerm();
+  
+function speakArivu(){
+  const btn=document.getElementById('hearBtn');
+  if(window.speechSynthesis.speaking){
+    window.speechSynthesis.cancel();
+    btn.textContent='▶ Hear Arivu';
+    btn.classList.remove('playing');
+    return;
+  }
+  const msg=new SpeechSynthesisUtterance("Good morning. You have 3 emails that need replies — 2 are marked urgent. Your standup is at 10am. You promised your team a report by end of day. I've already drafted replies in your tone. Shall I read them out?");
+  msg.rate=0.95;
+  msg.pitch=1;
+  msg.volume=1;
+  const voices=window.speechSynthesis.getVoices();
+  const preferred=voices.find(v=>v.name.includes('Google UK English Female')||v.name.includes('Samantha')||v.name.includes('Karen'));
+  if(preferred)msg.voice=preferred;
+  btn.textContent='◼ Stop';
+  btn.classList.add('playing');
+  msg.onend=()=>{
+    btn.textContent='▶ Hear Arivu';
+    btn.classList.remove('playing');
+  };
+  window.speechSynthesis.speak(msg);
+}
 </script>
 </body>
 </html>
